@@ -7,7 +7,7 @@ class DataLoaderService {
 
     loadData(file) {
         this.#file = file
-        return new Promise(resolve => {
+        return new Promise((resolve, reject) => {
             Papa.parse(this.#file, {
                 header: true,
                 worker: true,

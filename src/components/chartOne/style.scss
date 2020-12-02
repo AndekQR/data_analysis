@@ -1,0 +1,13 @@
+.selectClass {
+  margin: 10px;
+}
+
+.chartDiv {
+  display: inline-flex;
+  justify-content: center;
+  flex-direction: column;
+  .chartTitle {
+    text-align: center;
+  }
+}
+

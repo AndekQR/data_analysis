@@ -1,22 +1,35 @@
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
-import React from "react";
+import React, {useEffect, useState} from "react";
 import Button from "@material-ui/core/Button";
 import {CloudUpload} from "@material-ui/icons";
 import DataLoaderService from "../../services/DataLoader.service.";
 import "./style.scss"
+import progressBarImage from "../../assets/progress.gif"
 
-const MyAppBar = ({setData}) => {
+const MyAppBar = ({setData, progress}) => {
 
     let dataLoader = new DataLoaderService()
-    let file;
+    const [file, setFile] = useState(null)
+    const [progressBar, setProgressBar] = useState(progress)
+
+    useEffect(() => {
+        setProgressBar(progress)
+    }, [progress])
+
+    useEffect(() => {
+        dataLoader.loadData(file)
+            .then((value) => {
+                setData(value)
+            })
+            .catch(error => {
+                console.log(error.message)
+            })
+    }, [file])
 
     const selectFile = event => {
+        setFile(event.target.files[0])
         event.preventDefault()
-        file = event.target.files[0];
-        dataLoader.loadData(file).then((value) => {
-            setData(value)
-        })
     }
 
 
@@ -24,6 +37,7 @@ const MyAppBar = ({setData}) => {
         <div className={"root"}>
             <AppBar color={"secondary"} position="static">
                 <Toolbar className={"toolbar"}>
+                    { progressBar && <img className={"progressBar"} src={progressBarImage} alt={"progress..."}/> }
                     <div className={"buttons_container"}>
                         <input
                             accept=".csv"
