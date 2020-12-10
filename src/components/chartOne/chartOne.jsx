@@ -13,30 +13,25 @@ import "./style.scss"
  * @returns {JSX.Element}
  * @constructor
  */
-const ChartOne = ({data, setProgress}) => {
+const ChartOne = ({dataUtils, setProgress}) => {
 
     const maxAge = 100
 
-    const [allCountries, setAllCountries] = useState(getDistinctsAllCountires)
+    const [allCountries, setAllCountries] = useState(null)
     //kraj z którego wyświetlane są statystyki w tym wykresie
-    const [country, selectCountry] = useState(allCountries[0])
+    const [country, selectCountry] = useState(null)
     const [specificData, setSpecificData] = useState()
 
     useEffect(() => {
-        setSpecificData(getUpdatedData)
+        if (country != null) setSpecificData(getUpdatedData)
     }, [country])
 
-
-    function getDistinctsAllCountires() {
-        setProgress(true)
-        let tmp = data.filter((object, index, array) => (
-            index === array.findIndex((t) => (
-                t.country === object.country
-            ))
-        )).map(filteredObject => filteredObject.country);
-        setProgress(false)
-        return tmp
-    }
+    useEffect(() => {
+        dataUtils.getDistinctsAllCountires().then(data => {
+            setAllCountries(data)
+            selectCountry(data[0])
+        })
+    }, [])
 
     /**
      * zwraca wiek od którego ludzie umierją w konkretnym roku (15-24 years, 75+ years)
@@ -76,7 +71,7 @@ const ChartOne = ({data, setProgress}) => {
      */
     function getAverageStartAge(year, country) {
         let result = 0
-        const filteredData = data.filter(object => (
+        const filteredData = dataUtils.data.filter(object => (
             object.year === year && object.country === country
         ))
         filteredData.forEach(object => {
@@ -87,7 +82,7 @@ const ChartOne = ({data, setProgress}) => {
 
     function getAverageEndAge(year, country) {
         let result = 0
-        const filteredData = data.filter(object => (
+        const filteredData = dataUtils.data.filter(object => (
             object.year === year && object.country === country
         ))
         filteredData.forEach(object => {
@@ -98,7 +93,7 @@ const ChartOne = ({data, setProgress}) => {
 
     function getUpdatedData() {
         setProgress(true)
-        let tmp = data
+        let tmp = dataUtils.data
             .filter(object => (
                 object.country === country
             ))
@@ -129,34 +124,40 @@ const ChartOne = ({data, setProgress}) => {
 
     return (
         <div>
-            <div className={"selectClass"}>
-                <InputLabel id={"selectLabel"}>Choose country:</InputLabel>
-                <Select
-                    labelId={"selectLabel"}
-                    value={country}
-                    onChange={(event => changeCountry(event.target.value))}
-                >
-                    {allCountries.map(country => (
-                        <MenuItem key={country} value={country}>{country}</MenuItem>
-                    ))}
-                </Select>
+            {country &&
+            <div className={"container"}>
+                <div className={"header"}>
+                    <div className={"selectClass"}>
+                        <InputLabel id={"selectLabel"}>Choose country:</InputLabel>
+                        <Select
+                            labelId={"selectLabel"}
+                            value={country}
+                            onChange={(event => changeCountry(event.target.value))}
+                        >
+                            {allCountries.map(country => (
+                                <MenuItem key={country} value={country}>{country}</MenuItem>
+                            ))}
+                        </Select>
+                    </div>
+                    <span className={"chartTitle"}>Sredni wiek umieralności w wybranym kraju</span>
+                </div>
+                <div className={"chartDiv"}>
+                    <AreaChart
+                        width={730}
+                        height={250}
+                        data={specificData}
+                        margin={{
+                            top: 20, right: 20, bottom: 20, left: 20,
+                        }}>
+                        <XAxis dataKey={"year"} label={{ value: 'Rok', angle: 0, position: 'bottom' }}/>
+                        <YAxis label={{ value: 'Ilość', angle: -90, position: 'left' }} />
+                        <Area dataKey="ageRange" stroke="#8884d8" fill="#8884d8"/>
+                        <Tooltip/>
+                        <Legend align={"left"}/>
+                    </AreaChart>
+                </div>
             </div>
-            <div className={"chartDiv"}>
-                <span className={"chartTitle"}>Sredni wiek umieralności w wybranym kraju</span>
-                <AreaChart
-                    width={730}
-                    height={250}
-                    data={specificData}
-                    margin={{
-                        top: 20, right: 20, bottom: 20, left: 20,
-                    }}>
-                    <XAxis dataKey={"year"} label={{ value: 'Rok', angle: 0, position: 'bottom' }}/>
-                    <YAxis label={{ value: 'Ilość', angle: -90, position: 'left' }} />
-                    <Area dataKey="ageRange" stroke="#8884d8" fill="#8884d8"/>
-                    <Tooltip/>
-                    <Legend align={"left"}/>
-                </AreaChart>
-            </div>
+            }
         </div>
     )
 }
