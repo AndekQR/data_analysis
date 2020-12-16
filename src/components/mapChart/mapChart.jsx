@@ -6,11 +6,19 @@ import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 import ReactTooltip from "react-tooltip";
 import {scaleLinear} from "d3-scale";
+import {useDispatch} from "react-redux";
+import {progressBarActions} from "../../redux/actions/progressBar.actions";
 
 const geoURL = "https://raw.githubusercontent.com/zcreativelabs/react-simple-maps/master/topojson-maps/world-110m.json"
 
-
-const MapChart = ({dataUtils, setProgress}) => {
+/**
+ * Wykres mapy świata
+ * @param dataUtils
+ * @param setProgress
+ * @returns {JSX.Element}
+ * @constructor
+ */
+const MapChart = ({dataUtils}) => {
 
     const [allCountries, setAllCountries] = useState(null)
     const [years, setYears] = useState(null)
@@ -18,29 +26,30 @@ const MapChart = ({dataUtils, setProgress}) => {
     const [tooltipContent, setTooltipContent] = useState("")
     const [colorScale, setColorScale] = useState(null)
 
+    const dispatch = useDispatch()
+
     useEffect(() => {
-        dataUtils.getDistinctsAllCountires().then(data => {
-            setAllCountries(data)
-        })
-        dataUtils.getYears().then(data => {
-            setYears(data)
-            setYearInput(data[0])
-        })
-        getColorScale().then(scale => {
-            setColorScale({scale})
+        dispatch(progressBarActions.showProgressBar())
+        const countriesPromise = dataUtils.getDistinctsAllCountires()
+        const yearsPromise = dataUtils.getYears()
+        const colorScalePromise = getColorScale()
+        Promise.all([countriesPromise, yearsPromise, colorScalePromise]).then((values) => {
+            console.log(values)
+            setAllCountries(values[0])
+            setYears(values[1])
+            setYearInput(values[1][0])
+            setColorScale({'scale': values[2]})
+            dispatch(progressBarActions.hideProgressBar())
         })
     }, [])
-
 
     async function getColorScale() {
         let range = await dataUtils.getDeathsRange()
         return scaleLinear().domain(range).range(["#ffedea", "#ff5233"])
     }
 
-
-
     return (
-        <div >
+        <div>
             {(allCountries && years && yearInput && colorScale) &&
             <div className={"container"}>
                 <div className={"header"}>
@@ -60,7 +69,7 @@ const MapChart = ({dataUtils, setProgress}) => {
                 </div>
                 <ComposableMap height={400} data-tip="" projectionConfig={{scale: 140}}>
                     <Sphere stroke="#E4E5E6" strokeWidth={0.5}/>
-                    <Graticule stroke="#E4E5E6" strokeWidth={0.5} />
+                    <Graticule stroke="#E4E5E6" strokeWidth={0.5}/>
                     <Geographies geography={geoURL}>
                         {({geographies}) => (
                             geographies.map(geo => {
@@ -73,8 +82,6 @@ const MapChart = ({dataUtils, setProgress}) => {
                                         onMouseEnter={() => {
                                             let {NAME_LONG} = geo.properties;
                                             let {female, male} = dataUtils.getDeathsByGender(NAME_LONG, yearInput)
-                                            console.log("on mouse enter")
-                                            console.log(female)
                                             setTooltipContent(`${NAME_LONG}: \n
                                             women: ${female} \n
                                             men: ${male} \n

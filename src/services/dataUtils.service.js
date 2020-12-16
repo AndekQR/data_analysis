@@ -88,7 +88,7 @@ class DataUtils {
     }
 
     /**
-     * zwraca maksymalną liczbę zgonów zawartą w danych w całm roku
+     * zwraca minimalną i maksymalną liczbę zgonów zawartą w danych w całm roku
      */
     async getDeathsRange() {
         let countries = await this.getDistinctsAllCountires()

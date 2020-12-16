@@ -5,35 +5,42 @@ import ChartOne from "../chartOne/chartOne";
 import {Container, Grid} from "@material-ui/core";
 import MapChart from "../mapChart/mapChart";
 import DataUtils from "../../services/dataUtils.service";
+import {useDispatch} from "react-redux";
+import {progressBarActions} from "../../redux/actions/progressBar.actions";
 
 const MainPage = () => {
 
     const [data, setData] = useState(null);
-    const [progress, setProgress] = useState(false)
     const [dataUtils, setDataUtils] = useState(null)
 
     // useEffect(() => {
     //     console.log("progress updated: "+progress)
     // },[progress])
 
+    const dispatch = useDispatch()
+
     useEffect(() => {
         if (data != null) {
-            console.log("mainPage useeffect")
+            dispatch(progressBarActions.showProgressBar())
             setDataUtils(new DataUtils(data))
         }
     },[data])
 
+    useEffect(() => {
+        dispatch(progressBarActions.hideProgressBar())
+    }, [dataUtils])
+
     return (
         <div>
-            <MyAppBar setData={setData} progress={progress}/>
+            <MyAppBar setData={setData} />
             <Container fixed>
                 {dataUtils &&
                 <Grid container spacing={3} align={"center"} >
                     <Grid item xs={12} >
-                        <ChartOne dataUtils={dataUtils} setProgress={setProgress}/>
+                        <ChartOne dataUtils={dataUtils}/>
                     </Grid>
                     <Grid item xs={12}>
-                        <MapChart dataUtils={dataUtils} setProgress={setProgress}/>
+                        <MapChart dataUtils={dataUtils}/>
                     </Grid>
                 </Grid>
                 }

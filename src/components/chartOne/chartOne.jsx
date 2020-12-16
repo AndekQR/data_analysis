@@ -4,16 +4,17 @@ import InputLabel from "@material-ui/core/InputLabel";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 import "./style.scss"
+import {useDispatch} from "react-redux";
+import {progressBarActions} from "../../redux/actions/progressBar.actions";
 
 /**
  * Wyświetla diagram prezentujący zakres wieku w jakim ludzie umierali w określonym roku
  *
  * @param data - dane pobrane z pliku
- * @param setProgress - czy wyświetlic progress bar
  * @returns {JSX.Element}
  * @constructor
  */
-const ChartOne = ({dataUtils, setProgress}) => {
+const ChartOne = ({dataUtils}) => {
 
     const maxAge = 100
 
@@ -22,14 +23,26 @@ const ChartOne = ({dataUtils, setProgress}) => {
     const [country, selectCountry] = useState(null)
     const [specificData, setSpecificData] = useState()
 
+    const dispatch = useDispatch()
+
     useEffect(() => {
-        if (country != null) setSpecificData(getUpdatedData)
+        if (country != null) {
+            dispatch(progressBarActions.showProgressBar())
+            setSpecificData(getUpdatedData)
+
+        }
     }, [country])
 
     useEffect(() => {
+        dispatch(progressBarActions.hideProgressBar())
+    }, [specificData])
+
+    useEffect(() => {
+        dispatch(progressBarActions.showProgressBar())
         dataUtils.getDistinctsAllCountires().then(data => {
             setAllCountries(data)
             selectCountry(data[0])
+            dispatch(progressBarActions.hideProgressBar())
         })
     }, [])
 
@@ -92,7 +105,6 @@ const ChartOne = ({dataUtils, setProgress}) => {
     }
 
     function getUpdatedData() {
-        setProgress(true)
         let tmp = dataUtils.data
             .filter(object => (
                 object.country === country
@@ -107,7 +119,6 @@ const ChartOne = ({dataUtils, setProgress}) => {
                 }
             })
             .sort(compare);
-        setProgress(false)
         return tmp
     }
 
@@ -125,7 +136,7 @@ const ChartOne = ({dataUtils, setProgress}) => {
     return (
         <div>
             {country &&
-            <div className={"container"}>
+            <div className={"container1"}>
                 <div className={"header"}>
                     <div className={"selectClass"}>
                         <InputLabel id={"selectLabel"}>Choose country:</InputLabel>
@@ -139,18 +150,18 @@ const ChartOne = ({dataUtils, setProgress}) => {
                             ))}
                         </Select>
                     </div>
-                    <span className={"chartTitle"}>Sredni wiek umieralności w wybranym kraju</span>
+                    <span className={"chartTitle"}>Sredni wiek osób podcza ssamobójstwa</span>
                 </div>
                 <div className={"chartDiv"}>
                     <AreaChart
-                        width={730}
+                        width={700}
                         height={250}
                         data={specificData}
                         margin={{
                             top: 20, right: 20, bottom: 20, left: 20,
                         }}>
-                        <XAxis dataKey={"year"} label={{ value: 'Rok', angle: 0, position: 'bottom' }}/>
-                        <YAxis label={{ value: 'Ilość', angle: -90, position: 'left' }} />
+                        <XAxis dataKey={"year"} label={{value: 'Rok', angle: 0, position: 'bottom'}}/>
+                        <YAxis label={{value: 'Ilość', angle: -90, position: 'left'}}/>
                         <Area dataKey="ageRange" stroke="#8884d8" fill="#8884d8"/>
                         <Tooltip/>
                         <Legend align={"left"}/>

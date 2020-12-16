@@ -6,30 +6,40 @@ import {CloudUpload} from "@material-ui/icons";
 import DataLoaderService from "../../services/DataLoader.service.";
 import "./style.scss"
 import progressBarImage from "../../assets/progress.gif"
+import {useDispatch, useSelector} from "react-redux";
+import {progressBarActions} from "../../redux/actions/progressBar.actions";
 
-const MyAppBar = ({setData, progress}) => {
+const MyAppBar = ({setData}) => {
 
     let dataLoader = new DataLoaderService()
     const [file, setFile] = useState(null)
-    const [progressBar, setProgressBar] = useState(progress)
+    const progressBarState = useSelector(state => state.progressBar)
+    const dispatch = useDispatch()
 
     useEffect(() => {
-        setProgressBar(progress)
-    }, [progress])
-
-    useEffect(() => {
-        dataLoader.loadData(file)
-            .then((value) => {
-                setData(value)
-            })
-            .catch(error => {
-                console.log(error.message)
-            })
+        if (file != null) {
+            dispatch(progressBarActions.showProgressBar())
+            dataLoader.loadData(file)
+                .then((value) => {
+                    setData(value)
+                    dispatch(progressBarActions.hideProgressBar())
+                })
+                .catch(error => {
+                    console.log(error.message)
+                    dispatch(progressBarActions.hideProgressBar())
+                })
+        }
     }, [file])
 
     const selectFile = event => {
+        dispatch(progressBarActions.showProgressBar())
         setFile(event.target.files[0])
-        event.preventDefault()
+        dispatch(progressBarActions.hideProgressBar())
+    }
+
+    const onCancelInputWindow = () => {
+        window.removeEventListener('focus', onCancelInputWindow)
+        dispatch(progressBarActions.hideProgressBar())
     }
 
 
@@ -37,7 +47,8 @@ const MyAppBar = ({setData, progress}) => {
         <div className={"root"}>
             <AppBar color={"secondary"} position="static">
                 <Toolbar className={"toolbar"}>
-                    { progressBar && <img className={"progressBar"} src={progressBarImage} alt={"progress..."}/> }
+                    {(progressBarState.visible === true) &&
+                    <img className={"progressBar"} src={progressBarImage} alt={"progress..."}/>}
                     <div className={"buttons_container"}>
                         <input
                             accept=".csv"
@@ -46,11 +57,13 @@ const MyAppBar = ({setData, progress}) => {
                             type="file"
                             style={{display: "none"}}
                             onChange={selectFile}
-                            color={"secondary"}
                         />
                         <label htmlFor="contained-button-file">
                             {file && <span className={"fileName"}>{file.name}</span>}
-                            <Button className={"button"} startIcon={<CloudUpload/>} variant="contained"
+                            <Button onClick={() => {
+                                dispatch(progressBarActions.showProgressBar())
+                                // window.addEventListener('focus', onCancelInputWindow)
+                            }} className={"button"} startIcon={<CloudUpload/>} variant="contained"
                                     color={"primary"} component="span">
                                 Choose data file
                             </Button>
