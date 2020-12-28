@@ -49,7 +49,7 @@ const MapChart = ({dataUtils}) => {
     }
 
     return (
-        <div>
+        <div className={"mapChart"}>
             {(allCountries && years && yearInput && colorScale) &&
             <div className={"container"}>
                 <div className={"header"}>

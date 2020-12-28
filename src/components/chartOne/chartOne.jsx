@@ -134,9 +134,9 @@ const ChartOne = ({dataUtils}) => {
 
 
     return (
-        <div>
+        <div className={"chartOne"}>
             {country &&
-            <div className={"container1"}>
+            <div className={"container"}>
                 <div className={"header"}>
                     <div className={"selectClass"}>
                         <InputLabel id={"selectLabel"}>Choose country:</InputLabel>

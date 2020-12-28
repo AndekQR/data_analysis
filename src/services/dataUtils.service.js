@@ -27,6 +27,18 @@ class DataUtils {
         }
     }
 
+    async getDistinctAllYearsByCountry(country) {
+        if (this.#years == null) await this.getYears()
+        return this.data.filter(element => (
+            element.country === country
+        )).filter((element, index, array) => {
+            let firstIndex = array.findIndex((t) => (
+                t.year === element.year
+            ))
+            return index === firstIndex
+        }).map(element => element.year)
+    }
+
     /**
      * zwraca wszystkie unikalne lata
      * @returns {Promise<null>}
@@ -54,7 +66,7 @@ class DataUtils {
      * @param year
      * @returns {number}
      */
-     getAllDeaths(countryName, year) {
+    getAllDeaths(countryName, year) {
         let filteredData = this.data.filter(object => object.country === countryName && object.year == year)
         let result = 0;
         filteredData.forEach(object => {
@@ -74,10 +86,9 @@ class DataUtils {
         let manDeaths = 0;
         let womenDeaths = 0;
         filteredData.forEach(element => {
-            if(element.sex === "male") {
+            if (element.sex === "male") {
                 manDeaths = manDeaths + Number(element.suicides_no)
-            }
-            else {
+            } else {
                 womenDeaths = womenDeaths + Number(element.suicides_no)
             }
         })
@@ -96,7 +107,7 @@ class DataUtils {
         let mappedObjects = countries.map(country => {
             let objects = []
             for (let i of yearsList) {
-                objects.push({country, "year":i})
+                objects.push({country, "year": i})
             }
             return objects
         }).flat()
@@ -111,7 +122,41 @@ class DataUtils {
             return this.getAllDeaths(object.country, object.year)
         }))
 
-        return [min,max]
+        return [min, max]
+    }
+
+    /**
+     * zwraca wszystkie lata przy których występuje wybrany kraj
+     * @param country
+     * @returns {Promise<void>}
+     */
+    async getYearsByCountry(country) {
+        return this.data.filter(object => (object.country === country))
+            .map(element => element.year)
+    }
+
+    /**
+     * zwraca tylko takie dane które posiadają wybrany kraj oraz rok
+     * @param country
+     * @param year
+     * @returns {Promise<[]>}
+     */
+    async getFilteredData(country, year) {
+        return this.data.filter(element => element.country === country && element.year == year)
+    }
+
+
+    /**
+     * parsuje wiek podany w danych na tablicę typu [starAge, endAge]
+     * gdzie drugiej komórki może nie być
+     * lub zwraca null gdy nieprawidłowe ageString
+     * @param ageString
+     * @returns [starAge, endAge]
+     */
+    parseAge(ageString) {
+        const regex = /\d+/g
+        let matches = [...ageString.matchAll(regex)]
+        return matches.map((element) => element[0])
     }
 
 }

@@ -44,7 +44,7 @@ const MyAppBar = ({setData}) => {
 
 
     return (
-        <div className={"root"}>
+        <div className={"appBar"}>
             <AppBar color={"secondary"} position="static">
                 <Toolbar className={"toolbar"}>
                     {(progressBarState.visible === true) &&

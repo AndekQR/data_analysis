@@ -1,22 +1,26 @@
-.root {
+.appBar {
   flex-grow: 1;
-}
+  margin-bottom: 10px;
 
-.fileName {
-  margin: 8px;
-  font-weight: bold;
-}
+  .fileName {
+    margin: 8px;
+    font-weight: bold;
+  }
 
-.toolbar{
-  .buttons_container {
-    margin-left: auto;
-    margin-right: 0;
-    .button {
-      margin: 8px;
+  .toolbar {
+    .buttons_container {
+      margin-left: auto;
+      margin-right: 0;
+
+      .button {
+        margin: 8px;
+      }
+    }
+
+    .progressBar {
+      height: 50px;
     }
   }
-
-  .progressBar {
-    height: 50px;
-  }
 }
+
+
