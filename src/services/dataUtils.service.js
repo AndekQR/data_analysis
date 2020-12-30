@@ -8,7 +8,7 @@ class DataUtils {
 
     /**
      * zwraca wsystkie unikalne kraje zawarte w danych
-     * @returns {Promise<null>}
+     * @returns {Promise<[]>}
      */
     async getDistinctsAllCountires() {
         if (this.#countries == null) {
@@ -76,6 +76,30 @@ class DataUtils {
     }
 
     /**
+     * zwraca populację w wybranym kraju i roku
+     * @param country
+     * @param year
+     * @returns {number}
+     */
+    getPopulationByCountryAndYear(country, year) {
+        let filteredData = this.data.filter(object => object.country === country && object.year == year)
+        let result = 0;
+        filteredData.forEach(object => {
+            result = result + Number(object.population)
+        })
+        return result
+    }
+
+    getSuicides_100k_population(country, year) {
+        let filteredData = this.data.filter(object => object.country === country && object.year == year)
+        let result = 0;
+        filteredData.forEach(object => {
+            result = result + Number(object.suicides_k_pop)
+        })
+        return result
+    }
+
+    /**
      * zwraca liczbę zgonów w danym roku i kraju, z podziałem na meżczyzny i kobiety
      * @param countryName
      * @param year
@@ -126,16 +150,6 @@ class DataUtils {
     }
 
     /**
-     * zwraca wszystkie lata przy których występuje wybrany kraj
-     * @param country
-     * @returns {Promise<void>}
-     */
-    async getYearsByCountry(country) {
-        return this.data.filter(object => (object.country === country))
-            .map(element => element.year)
-    }
-
-    /**
      * zwraca tylko takie dane które posiadają wybrany kraj oraz rok
      * @param country
      * @param year
@@ -144,7 +158,6 @@ class DataUtils {
     async getFilteredData(country, year) {
         return this.data.filter(element => element.country === country && element.year == year)
     }
-
 
     /**
      * parsuje wiek podany w danych na tablicę typu [starAge, endAge]
@@ -157,6 +170,17 @@ class DataUtils {
         const regex = /\d+/g
         let matches = [...ageString.matchAll(regex)]
         return matches.map((element) => element[0])
+    }
+
+    /**
+     * zwraca wszystkie unikalne przedziały wiekowe
+     * @returns {string[]}
+     */
+    getAllAgeRangesAsString() {
+        return this.data.filter((element, index, array) => {
+            let firstIndex = array.findIndex(t => (t.age === element.age))
+            return firstIndex === index
+        }).map((element) => element.age).sort()
     }
 
 }

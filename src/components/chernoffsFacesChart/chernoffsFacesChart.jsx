@@ -5,6 +5,7 @@ import {useDispatch} from "react-redux";
 import InputLabel from "@material-ui/core/InputLabel";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
+import {ChernoffElements} from "./chernoffElements";
 
 const ChernoffsFacesChart = ({dataUtils}) => {
 
@@ -20,6 +21,7 @@ const ChernoffsFacesChart = ({dataUtils}) => {
         window.innerWidth,
         window.innerHeight,
     ]);
+    const [containerDiv, setContainerDiv] = useState()
 
     useEffect(() => {
         dispatch(progressBarActions.showProgressBar())
@@ -43,20 +45,18 @@ const ChernoffsFacesChart = ({dataUtils}) => {
 
     useEffect(() => {
         if (data != null && data.length > 0) drawFaces()
+        setContainerDiv(document.getElementsByClassName('container')[0])
     }, [data])
 
     useEffect(() => {
-        const elements = document.getElementsByClassName("container")
-        if (elements.length > 0) {
-            const element = elements[0]
+        if (containerDiv !== undefined) {
             const debouncedResizeHandler = debounce(() => {
-                setDimension([element.clientWidth, element.clientHeight]);
+                setDimension([containerDiv.clientWidth, containerDiv.clientHeight]);
             }, 80);
             window.addEventListener('resize', debouncedResizeHandler);
-            return () => window.removeEventListener('resize', debouncedResizeHandler);
         }
 
-    }, [])
+    }, [containerDiv])
 
     useEffect(() => {
         drawFaces()
@@ -74,7 +74,6 @@ const ChernoffsFacesChart = ({dataUtils}) => {
         };
     }
 
-
     /**
      * Funkcja rysująca twarz,
      * brane pod uwagę są sex, age, suiciedes_no, population, suiciedes/100k pop
@@ -85,9 +84,8 @@ const ChernoffsFacesChart = ({dataUtils}) => {
         const dynamicCanvas = canvasRef.current
         if (dynamicCanvas == null) return null
         const ctx = dynamicCanvas.getContext('2d')
-        const div = document.getElementsByClassName("container")
-        dynamicCanvas.height = div[0].clientHeight;
-        dynamicCanvas.width = div[0].clientWidth;
+        dynamicCanvas.height = containerDiv.clientHeight;
+        dynamicCanvas.width = containerDiv.clientWidth;
 
         ctx.clearRect(0, 0, dynamicCanvas.width, dynamicCanvas.height);
 
@@ -105,6 +103,7 @@ const ChernoffsFacesChart = ({dataUtils}) => {
         return ctx
     }
 
+
     /**
      * zwraca pozycje do narysowania twarzy
      * @param currentElementIndex - indeks ajtualnie rysowanej twarzy
@@ -116,18 +115,13 @@ const ChernoffsFacesChart = ({dataUtils}) => {
     function getCoordinates(currentElementIndex, allElementsLenght, width, height) {
         const oneElementSize = [100, 100]
         const elementsInRow = Math.round(width / (oneElementSize[0] + 20))
-        console.log("elements in row: " + elementsInRow)
         const rows = Math.ceil(allElementsLenght / elementsInRow)
-        console.log("rows: " + rows)
         let currentElement = currentElementIndex + 1
         let iteratedElements = 1
         for (let i = 1; i <= rows; i++) { //rows
             for (let j = 1; j <= elementsInRow; j++) { //columns
                 if (iteratedElements === currentElement) {
-                    console.log("current element index: " + currentElement)
-                    console.log("i*j: " + (i * j))
-                    console.log("coord: " + (j * oneElementSize[0] - 80) + "x" + (i * oneElementSize[1] - 80))
-                    return [j * oneElementSize[0] - 80, i * oneElementSize[1] - 80]
+                    return [j * oneElementSize[0]-50, i * oneElementSize[1] - 80]
                 }
                 iteratedElements++
             }
@@ -147,199 +141,13 @@ const ChernoffsFacesChart = ({dataUtils}) => {
      * @param {number} mouthType - Typ ust (1, 2, 3).
      */
     function drawFace(ctx, x, y, headType, eyebrowType, eyesType, noseType, mouthType) {
-
-        drawHead(ctx, x, y, headType);
-        drawEyebrow(ctx, x, y, eyebrowType);
-        drawEyes(ctx, x, y, eyesType);
-        drawNose(ctx, x, y, noseType);
-        drawMouth(ctx, x, y, mouthType);
+        ChernoffElements.drawHead(ctx, x, y, headType);
+        ChernoffElements.drawEyebrow(ctx, x, y, eyebrowType);
+        ChernoffElements.drawEyes(ctx, x, y, eyesType);
+        ChernoffElements.drawNose(ctx, x, y, noseType);
+        ChernoffElements.drawMouth(ctx, x, y, mouthType);
     }
 
-    /**
-     * Funkcja rysująca nos.
-     * @param {CanvasRenderingContext2D} ctx
-     * @param {number} x - Współrzędna X w obrębie twarzy.
-     * @param {number} y - Współrzędna Y w obrębie twarzy.
-     * @param {number} type - 1, 2 lub 3
-     */
-    function drawNose(ctx, x, y, type) {
-
-        ctx.beginPath();
-        ctx.moveTo(x + 25, y + 20);
-        switch (type) {
-            case 1:
-                ctx.lineTo(x + 23, y + 25);
-                ctx.lineTo(x + 27, y + 25);
-                break;
-            case 2:
-                ctx.lineTo(x + 20, y + 25);
-                ctx.lineTo(x + 30, y + 25);
-                break;
-            case 3:
-                ctx.lineTo(x + 20, y + 32);
-                ctx.lineTo(x + 30, y + 32);
-                break;
-        }
-        ctx.lineTo(x + 25, y + 20);
-        ctx.stroke();
-    }
-
-    /**
-     * Funkcja rysująca głowę.
-     * @param {CanvasRenderingContext2D} ctx
-     * @param {number} x - Współrzędna X w obrębie twarzy.
-     * @param {number} y - Współrzędna Y w obrębie twarzy.
-     * @param {number} type - 1, 2 lub 3
-     */
-    function drawHead(ctx, x, y, type) {
-
-        switch (type) {
-            case 1:
-                drawEllipse(ctx, (x - /*width*/30 / 2.0) + 25, (y - 50 / 2.0) + 25, /*width*/30, 50);
-                break;
-            case 2:
-                drawEllipse(ctx, (x - /*width*/40 / 2.0) + 25, (y - 50 / 2.0) + 25, /*width*/40, 50);
-                break;
-            case 3:
-                drawEllipse(ctx, (x - /*width*/50 / 2.0) + 25, (y - 50 / 2.0) + 25, /*width*/50, 50);
-                break;
-        }
-    }
-
-    /**
-     * Funkcja rysująca oczy.
-     * @param {CanvasRenderingContext2D} ctx
-     * @param {number} x - Współrzędna X w obrębie twarzy.
-     * @param {number} y - Współrzędna Y w obrębie twarzy.
-     * @param {number} type - 1, 2 lub 3
-     */
-    function drawEyes(ctx, x, y, type) {
-
-        var size;
-        switch (type) {
-            case 1:
-                size = 6;
-                break;
-            case 2:
-                size = 10;
-                break;
-            case 3:
-                size = 15;
-                break;
-        }
-
-        drawEllipseByCenter(ctx, x + 15, y + 15, size, size);
-        drawEllipseByCenter(ctx, x + 35, y + 15, size, size);
-        drawEllipseByCenter(ctx, x + 15, y + 15, size - 5, size - 5);
-        drawEllipseByCenter(ctx, x + 35, y + 15, size - 5, size - 5);
-    }
-
-    /**
-     * Funkcja rysująca usta.
-     * @param {CanvasRenderingContext2D} ctx
-     * @param {number} x - Współrzędna X w obrębie twarzy.
-     * @param {number} y - Współrzędna Y w obrębie twarzy.
-     * @param {number} type - 1, 2 lub 3
-     */
-    function drawMouth(ctx, x, y, type) {
-
-        ctx.beginPath();
-        switch (type) {
-            case 3:
-                ctx.arc(x + 25, y + 25, 20, 0.25 * Math.PI, 0.75 * Math.PI);
-                break;
-            case 2:
-                ctx.moveTo(x + 15, y + 40);
-                ctx.lineTo(x + 35, y + 40);
-                break;
-            case 1:
-                ctx.arc(x + 25, y + 55, 20, 1.25 * Math.PI, 1.75 * Math.PI);
-                break;
-        }
-        ctx.lineWidth = 2;
-        ctx.stroke();
-    }
-
-    /**
-     * Funkcja rysująca brwi.
-     * @param {CanvasRenderingContext2D} ctx
-     * @param {number} x - Współrzędna X w obrębie twarzy.
-     * @param {number} y - Współrzędna Y w obrębie twarzy.
-     * @param {number} type - 1, 2 lub 3
-     */
-    function drawEyebrow(ctx, x, y, type) {
-
-        ctx.beginPath();
-        switch (type) {
-            case 1:
-                //lewa1
-                ctx.moveTo(x + 5, y + 15);
-                ctx.lineTo(x + 20, y + 5);
-                //prawa1
-                ctx.moveTo(x + 30, y + 5);
-                ctx.lineTo(x + 45, y + 15);
-                break;
-            case 2:
-                //lewa2
-                ctx.moveTo(x + 8, y + 8);
-                ctx.lineTo(x + 20, y + 8);
-                //prawa2
-                ctx.moveTo(x + 30, y + 8);
-                ctx.lineTo(x + 42, y + 8);
-                break;
-            case 3:
-                //lewa3
-                ctx.moveTo(x + 8, y + 5);
-                ctx.lineTo(x + 20, y + 8);
-                //prawa3
-                ctx.moveTo(x + 30, y + 8);
-                ctx.lineTo(x + 42, y + 5);
-                break;
-        }
-        ctx.lineWidth = 3;
-        ctx.stroke();
-    }
-
-    /**
-     * Funkcja rysująca elipsę.
-     * @param {CanvasRenderingContext2D} ctx
-     * @param {number} x - Współrzędna X środka elipsy.
-     * @param {number} y - Współrzędna Y środka elipsy.
-     * @param {number} w - Szerokość elipsy.
-     * @param {number} h - Wysokość elipsy.
-     */
-    function drawEllipseByCenter(ctx, x, y, w, h) {
-
-        drawEllipse(ctx, x - w / 2.0, y - h / 2.0, w, h);
-    }
-
-    /**
-     * Funkcja rysująca elipsę.
-     * @param {CanvasRenderingContext2D} ctx
-     * @param {number} x - Współrzędna X elipsy.
-     * @param {number} y - Współrzędna Y elipsy.
-     * @param {number} w - Szerokość elipsy.
-     * @param {number} h - Wysokość elipsy.
-     */
-    function drawEllipse(ctx, x, y, w, h) {
-
-        var kappa = .5522848,
-            ox = (w / 2) * kappa, // control point offset horizontal
-            oy = (h / 2) * kappa, // control point offset vertical
-            xe = x + w,           // x-end
-            ye = y + h,           // y-end
-            xm = x + w / 2,       // x-middle
-            ym = y + h / 2;       // y-middle
-
-        ctx.beginPath();
-        ctx.moveTo(x, ym);
-        ctx.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
-        ctx.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
-        ctx.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
-        ctx.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
-        ctx.lineWidth = 1;
-        ctx.stroke();
-    }
 
     /**
      * funkcja wyznacza numer przedziału do któej należy @parameterValue
@@ -403,7 +211,7 @@ const ChernoffsFacesChart = ({dataUtils}) => {
     return (
         <div className={"chernoff"}>
             {(allCountries && yearsByCountry && yearInput && countryInput) &&
-            <div className={"container"}>
+            <div className={"container"} style={{height: '600px'}}>
                 <div className={"controls"}>
                     <div>
                         <InputLabel id={"selectLabel"}>Choose country:</InputLabel>

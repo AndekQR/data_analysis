@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {Area, AreaChart, Legend, Tooltip, XAxis, YAxis} from "recharts";
+import {Area, AreaChart, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import InputLabel from "@material-ui/core/InputLabel";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -14,7 +14,7 @@ import {progressBarActions} from "../../redux/actions/progressBar.actions";
  * @returns {JSX.Element}
  * @constructor
  */
-const ChartOne = ({dataUtils}) => {
+const AreaAgeChart = ({dataUtils}) => {
 
     const maxAge = 100
 
@@ -29,7 +29,6 @@ const ChartOne = ({dataUtils}) => {
         if (country != null) {
             dispatch(progressBarActions.showProgressBar())
             setSpecificData(getUpdatedData)
-
         }
     }, [country])
 
@@ -105,7 +104,7 @@ const ChartOne = ({dataUtils}) => {
     }
 
     function getUpdatedData() {
-        let tmp = dataUtils.data
+        return dataUtils.data
             .filter(object => (
                 object.country === country
             ))
@@ -118,8 +117,7 @@ const ChartOne = ({dataUtils}) => {
                     ]
                 }
             })
-            .sort(compare);
-        return tmp
+            .sort(compare)
     }
 
     function compare(a, b) {
@@ -150,22 +148,22 @@ const ChartOne = ({dataUtils}) => {
                             ))}
                         </Select>
                     </div>
-                    <span className={"chartTitle"}>Sredni wiek osób podcza ssamobójstwa</span>
+                    <span className={"chartTitle"}>Sredni wiek osób podczas samobójstwa</span>
                 </div>
                 <div className={"chartDiv"}>
-                    <AreaChart
-                        width={700}
-                        height={250}
-                        data={specificData}
-                        margin={{
-                            top: 20, right: 20, bottom: 20, left: 20,
-                        }}>
-                        <XAxis dataKey={"year"} label={{value: 'Rok', angle: 0, position: 'bottom'}}/>
-                        <YAxis label={{value: 'Ilość', angle: -90, position: 'left'}}/>
-                        <Area dataKey="ageRange" stroke="#8884d8" fill="#8884d8"/>
-                        <Tooltip/>
-                        <Legend align={"left"}/>
-                    </AreaChart>
+                    <ResponsiveContainer width={"95%"} height={400}>
+                        <AreaChart
+                            data={specificData}
+                            margin={{
+                                top: 20, right: 20, bottom: 20, left: 20,
+                            }}>
+                            <XAxis dataKey={"year"} label={{value: 'Rok', angle: 0, position: 'bottom'}}/>
+                            <YAxis label={{value: 'Ilość', angle: -90, position: 'left'}}/>
+                            <Area dataKey="ageRange" stroke="#8884d8" fill="#8884d8"/>
+                            <Tooltip/>
+                            <Legend align={"left"}/>
+                        </AreaChart>
+                    </ResponsiveContainer>
                 </div>
             </div>
             }
@@ -173,4 +171,4 @@ const ChartOne = ({dataUtils}) => {
     )
 }
 
-export default ChartOne;
+export default AreaAgeChart;
