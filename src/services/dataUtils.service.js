@@ -177,10 +177,36 @@ class DataUtils {
      * @returns {string[]}
      */
     getAllAgeRangesAsString() {
-        return this.data.filter((element, index, array) => {
+        let tmpData =  this.data.filter((element, index, array) => {
             let firstIndex = array.findIndex(t => (t.age === element.age))
             return firstIndex === index
-        }).map((element) => element.age).sort()
+        }).map((element) => element.age)
+        tmpData.sort((a,b) => {
+            const firstNumberRegex = /\d+/g
+            let firstNumberFromA = Number([...a.matchAll(firstNumberRegex)][0][0])
+            let firstNumberFromB = Number([...b.matchAll(firstNumberRegex)][0][0])
+
+            if (firstNumberFromA > firstNumberFromB) return 1
+            else if(firstNumberFromA < firstNumberFromB) return -1
+            else return 0
+        })
+        return tmpData
+    }
+
+    /**
+     * zwraca populację
+     * @param country {string}
+     * @param year {number}
+     * @param sex {string}
+     * @param age {string} w formacie z danych
+     */
+    getPopulation(country, year, sex, age) {
+        return this.data.filter(element => {
+            return element.country === country &&
+                element.year == year &&
+                element.sex === sex &&
+                element.age === age
+        }).map((element) => element.population)[0]
     }
 
 }

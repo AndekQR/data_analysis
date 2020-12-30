@@ -211,7 +211,7 @@ const ChernoffsFacesChart = ({dataUtils}) => {
     return (
         <div className={"chernoff"}>
             {(allCountries && yearsByCountry && yearInput && countryInput) &&
-            <div className={"container"} style={{height: '600px'}}>
+            <div className={"container"} style={{height: '500px'}}>
                 <div className={"controls"}>
                     <div>
                         <InputLabel id={"selectLabel"}>Choose country:</InputLabel>

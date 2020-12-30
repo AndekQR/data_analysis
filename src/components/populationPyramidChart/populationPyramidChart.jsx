@@ -1,51 +1,84 @@
-import "./styles.scss"
+import "./style.scss"
+import React, {useEffect, useState} from 'react'
 import Highcharts from 'highcharts'
 import HighchartsReact from 'highcharts-react-official'
+import {useDispatch} from "react-redux";
+import {progressBarActions} from "../../redux/actions/progressBar.actions";
+import InputLabel from "@material-ui/core/InputLabel";
+import Select from "@material-ui/core/Select";
+import MenuItem from "@material-ui/core/MenuItem";
 
 const PopulationPyramidChart = ({dataUtils}) => {
 
-    var categories = [
-        '0-4', '5-9', '10-14', '15-19',
-        '20-24', '25-29', '30-34', '35-39', '40-44',
-        '45-49', '50-54', '55-59', '60-64', '65-69',
-        '70-74', '75-79', '80-84', '85-89', '90-94',
-        '95-99', '100 + '
-    ];
+    const sex = ['male', 'female']
+    const [categories, setCategories] = useState([])
+    const [yearInput, setYearInput] = useState()
+    const [countryInput, setCountryInput] = useState()
+    const [allCountries, setAllCountries] = useState([])
+    const [yearsByCountry, setYearsByCountry] = useState([])
+    const [maleData, setMaleData] = useState([])
+    const [data, setData] = useState({
+        maleData: [],
+        femaleData: []
+    })
+
+    const dispatch = useDispatch()
+
+    useEffect(() => {
+        dispatch(progressBarActions.showProgressBar())
+        const ranges = dataUtils.getAllAgeRangesAsString()
+        console.log(ranges)
+        setCategories(ranges)
+        dataUtils.getDistinctsAllCountires().then(countries => {
+            setAllCountries(countries)
+            const firstCountry = countries[0]
+            setCountryInput(firstCountry)
+            dataUtils.getDistinctAllYearsByCountry(firstCountry).then(years => {
+                setYearsByCountry(years)
+                setYearInput(years[0]);
+                dispatch(progressBarActions.hideProgressBar())
+            })
+        })
+    }, [])
+
+
+
+    useEffect(() => {
+        let tmpMaleData = []
+        let tmpFemaleData = []
+        categories.forEach(category => {
+            const malePopulation = dataUtils.getPopulation(countryInput, yearInput, sex[0], category)
+            const femalePopulation = dataUtils.getPopulation(countryInput, yearInput, sex[1], category)
+            tmpMaleData.push(-(Number(malePopulation))) //bo słupki idą w lewą stronę
+            tmpFemaleData.push(Number(femalePopulation))
+        })
+        setData({
+            maleData: tmpMaleData,
+            femaleData: tmpFemaleData
+        })
+    }, [categories, countryInput, yearInput]);
+
 
     const options = {
         chart: {
             type: 'bar'
         },
         title: {
-            text: 'Population pyramid for Germany, 2018'
-        },
-        subtitle: {
-            text: 'Source: <a href="http://populationpyramid.net/germany/2018/">Population Pyramids of the World from 1950 to 2100</a>'
-        },
-        accessibility: {
-            point: {
-                valueDescriptionFormat: '{index}. Age {xDescription}, {value}%.'
-            }
+            text: 'Population pyramid'
         },
         xAxis: [{
             categories: categories,
             reversed: false,
             labels: {
                 step: 1
-            },
-            accessibility: {
-                description: 'Age (male)'
             }
-        }, { // mirror axis on right side
+        }, {
             opposite: true,
             reversed: false,
             categories: categories,
             linkedTo: 0,
             labels: {
                 step: 1
-            },
-            accessibility: {
-                description: 'Age (female)'
             }
         }],
         yAxis: {
@@ -54,12 +87,8 @@ const PopulationPyramidChart = ({dataUtils}) => {
             },
             labels: {
                 formatter: function () {
-                    return Math.abs(this.value) + '%';
+                    return Math.abs(this.value) ;
                 }
-            },
-            accessibility: {
-                description: 'Percentage population',
-                rangeDescription: 'Range: 0 to 5%'
             }
         },
 
@@ -72,43 +101,57 @@ const PopulationPyramidChart = ({dataUtils}) => {
         tooltip: {
             formatter: function () {
                 return '<b>' + this.series.name + ', age ' + this.point.category + '</b><br/>' +
-                    'Population: ' + Highcharts.numberFormat(Math.abs(this.point.y), 1) + '%';
+                    'Population: ' + Highcharts.numberFormat(Math.abs(this.point.y), 1);
             }
         },
 
         series: [{
             name: 'Male',
-            data: [
-                -2.2, -2.1, -2.2, -2.4,
-                -2.7, -3.0, -3.3, -3.2,
-                -2.9, -3.5, -4.4, -4.1,
-                -3.4, -2.7, -2.3, -2.2,
-                -1.6, -0.6, -0.3, -0.0,
-                -0.0
-            ]
+            data: data.maleData
         }, {
             name: 'Female',
-            data: [
-                2.1, 2.0, 2.1, 2.3, 2.6,
-                2.9, 3.2, 3.1, 2.9, 3.4,
-                4.3, 4.0, 3.5, 2.9, 2.5,
-                2.7, 2.2, 1.1, 0.6, 0.2,
-                0.0
-            ]
+            data: data.femaleData
         }]
     }
 
 
     return (
         <div className={"populationPyramidChart"}>
+            {(countryInput && yearInput && data) &&
             <div className={"container"}>
+                <div className={"controls"}>
+                    <div>
+                        <InputLabel id={"selectLabel"}>Choose country:</InputLabel>
+                        <Select
+                            labelId={"selectLabel"}
+                            value={countryInput}
+                            onChange={(event => setCountryInput(event.target.value))}
+                        >
+                            {allCountries.map(country => (
+                                <MenuItem key={country} value={country}>{country}</MenuItem>
+                            ))}
+                        </Select>
+                    </div>
+                    <div>
+                        <InputLabel id={"selectLabel"}>Choose year:</InputLabel>
+                        <Select
+                            labelId={"selectLabel"}
+                            value={yearInput}
+                            onChange={(event => setYearInput(event.target.value))}
+                        >
+                            {yearsByCountry.map(year => (
+                                <MenuItem key={year} value={year}>{year}</MenuItem>
+                            ))}
+                        </Select>
+                    </div>
+                </div>
                 <div className={"chart"}>
                     <HighchartsReact
                         highcharts={Highcharts}
                         options={options}
                     />
                 </div>
-            </div>
+            </div>}
         </div>
     )
 }

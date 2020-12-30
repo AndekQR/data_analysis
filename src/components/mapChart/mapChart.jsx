@@ -34,7 +34,6 @@ const MapChart = ({dataUtils}) => {
         const yearsPromise = dataUtils.getYears()
         const colorScalePromise = getColorScale()
         Promise.all([countriesPromise, yearsPromise, colorScalePromise]).then((values) => {
-            console.log(values)
             setAllCountries(values[0])
             setYears(values[1])
             setYearInput(values[1][0])

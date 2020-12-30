@@ -5,6 +5,8 @@ import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 import {Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, XAxis, YAxis} from "recharts";
 import {Tooltip} from "@material-ui/core";
+import {progressBarActions} from "../../redux/actions/progressBar.actions";
+import {useDispatch} from "react-redux";
 
 /**
  *
@@ -21,8 +23,10 @@ const MyBarChart = ({dataUtils}) => {
     const [yearsByCountry, setYearsByCountry] = useState([])
     const [data, setData] = useState([])
 
+    const dispatch = useDispatch()
 
     useEffect(() => {
+        dispatch(progressBarActions.showProgressBar())
         dataUtils.getDistinctsAllCountires().then((countries) => {
             setCountryInput(countries[0])
             setAllCountries(countries)
@@ -74,6 +78,7 @@ const MyBarChart = ({dataUtils}) => {
                 break;
             }
         }
+        dispatch(progressBarActions.hideProgressBar())
     }, [yearsByCountry, dataSubject])
 
 
@@ -107,6 +112,7 @@ const MyBarChart = ({dataUtils}) => {
                                 ))}
                             </Select>
                         </div>
+                        <span className={"title"}>Liczba określonego wskaźnika w każdym roku</span>
                     </div>
                 </div>
                 <div className={"chart"}>
