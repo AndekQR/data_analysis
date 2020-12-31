@@ -159,9 +159,9 @@ const AreaAgeChart = ({dataUtils}) => {
                             }}>
                             <XAxis dataKey={"year"} label={{value: 'Rok', angle: 0, position: 'bottom'}}/>
                             <YAxis label={{value: 'Ilość', angle: -90, position: 'left'}}/>
-                            <Area dataKey="ageRange" stroke="#8884d8" fill="#8884d8"/>
+                            <Area name={"Age range"} dataKey="ageRange" stroke="#8884d8" fill="#8884d8"/>
                             <Tooltip/>
-                            <Legend align={"left"}/>
+                            <Legend  align={"left"}/>
                         </AreaChart>
                     </ResponsiveContainer>
                 </div>

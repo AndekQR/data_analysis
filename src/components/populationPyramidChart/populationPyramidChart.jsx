@@ -16,7 +16,6 @@ const PopulationPyramidChart = ({dataUtils}) => {
     const [countryInput, setCountryInput] = useState()
     const [allCountries, setAllCountries] = useState([])
     const [yearsByCountry, setYearsByCountry] = useState([])
-    const [maleData, setMaleData] = useState([])
     const [data, setData] = useState({
         maleData: [],
         femaleData: []

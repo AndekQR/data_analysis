@@ -6,6 +6,7 @@ import InputLabel from "@material-ui/core/InputLabel";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 import {ChernoffElements} from "./chernoffElements";
+import ChernoffLegend from "./chernoffLegend";
 
 const ChernoffsFacesChart = ({dataUtils}) => {
 
@@ -106,7 +107,7 @@ const ChernoffsFacesChart = ({dataUtils}) => {
 
     /**
      * zwraca pozycje do narysowania twarzy
-     * @param currentElementIndex - indeks ajtualnie rysowanej twarzy
+     * @param currentElementIndex - indeks aktualnie rysowanej twarzy
      * @param allElementsLenght - liczba wszystkich twarzy do narysowania
      * @param width - szerokość powierzchni rysowania
      * @param height - wysokość powierzchni rysowania
@@ -176,31 +177,43 @@ const ChernoffsFacesChart = ({dataUtils}) => {
             }
             case /*suicides_no*/
             parameters[2]: {
-                const sortedData = [...data].sort((a, b) => a.suicides_no > b.suicides_no)
+                const sortedData = [...data].sort((a, b) => {
+                    if(Number(a.suicides_no) > Number(b.suicides_no)) return 1
+                    if(Number(a.suicides_no) < Number(b.suicides_no)) return -1
+                    else return 0
+                })
                 const middle = Math.ceil(sortedData.length / 2)
                 const quarter = Math.ceil(middle / 2)
-                if (parameterValue < sortedData[quarter].suicides_no) return 3
-                if (parameterValue > sortedData[quarter].suicides_no && parameterValue < sortedData[middle + quarter].suicides_no) return 1
-                if (parameterValue > sortedData[middle + quarter]) return 2
+                if (parameterValue <= sortedData[quarter].suicides_no) return 3
+                if (parameterValue > sortedData[quarter].suicides_no && parameterValue <= sortedData[middle + quarter].suicides_no) return 1
+                if (parameterValue > sortedData[middle + quarter].suicides_no) return 2
                 return 3
             }
             case /*population*/
             parameters[3]: {
-                const sortedData = [...data].sort((a, b) => a.population > b.population)
+                const sortedData = [...data].sort((a, b) => {
+                    if(Number(a.population) > Number(b.population)) return 1
+                    if(Number(a.population) < Number(b.population)) return -1
+                    else return 0
+                })
                 const middle = Math.ceil(sortedData.length / 2)
                 const quarter = Math.ceil(middle / 2)
-                if (parameterValue < sortedData[quarter].population) return 3
-                if (parameterValue > sortedData[quarter].population && parameterValue < sortedData[middle + quarter].population) return 1
+                if (parameterValue <= sortedData[quarter].population) return 3
+                if (parameterValue > sortedData[quarter].population && parameterValue <= sortedData[middle + quarter].population) return 1
                 if (parameterValue > sortedData[middle + quarter].population) return 2
                 return 3
             }
             case /*suicides_k_pop*/
             parameters[4]: {
-                const sortedData = [...data].sort((a, b) => a.suicides_k_pop > b.suicides_k_pop)
+                const sortedData = [...data].sort((a, b) => {
+                    if(Number(a.suicides_k_pop) > Number(b.suicides_k_pop)) return 1
+                    if(Number(a.suicides_k_pop) < Number(b.suicides_k_pop)) return -1
+                    else return 0
+                })
                 const middle = Math.ceil(sortedData.length / 2)
                 const quarter = Math.ceil(middle / 2)
-                if (parameterValue < sortedData[quarter].suicides_k_pop) return 3
-                if (parameterValue > sortedData[quarter].suicides_k_pop && parameterValue < sortedData[middle + quarter].suicides_k_pop) return 1
+                if (parameterValue <= sortedData[quarter].suicides_k_pop) return 3
+                if (parameterValue > sortedData[quarter].suicides_k_pop && parameterValue <= sortedData[middle + quarter].suicides_k_pop) return 1
                 if (parameterValue > sortedData[middle + quarter].suicides_k_pop) return 2
                 return 3
             }
@@ -240,6 +253,7 @@ const ChernoffsFacesChart = ({dataUtils}) => {
                 </div>
                 <canvas className={"canvas"} ref={canvasRef}/>
             </div>}
+            <ChernoffLegend getCoordinates={getCoordinates}/>
         </div>
     )
 }

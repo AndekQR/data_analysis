@@ -66,7 +66,7 @@ function drawHead(ctx, x, y, type) {
  */
 function drawEyes(ctx, x, y, type) {
 
-    var size;
+    let size;
     switch (type) {
         case 1:
             size = 6;
@@ -174,7 +174,7 @@ function drawEllipseByCenter(ctx, x, y, w, h) {
  */
 function drawEllipse(ctx, x, y, w, h) {
 
-    var kappa = .5522848,
+    const kappa = .5522848,
         ox = (w / 2) * kappa, // control point offset horizontal
         oy = (h / 2) * kappa, // control point offset vertical
         xe = x + w,           // x-end

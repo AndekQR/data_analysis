@@ -1,5 +1,7 @@
 .chernoff {
 
+  height: 100%;
+
   .controls {
     display: flex;
     flex-direction: row;
@@ -9,4 +11,8 @@
   .canvas {
 
   }
+}
+
+.chernoffLegend {
+  margin-top: 5px;
 }
