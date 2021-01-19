@@ -8,6 +8,7 @@ import ReactTooltip from "react-tooltip";
 import {scaleLinear} from "d3-scale";
 import {useDispatch} from "react-redux";
 import {progressBarActions} from "../../redux/actions/progressBar.actions";
+import {chernoffFacesActions} from "../../redux/actions/chernoffChart.actions";
 
 const geoURL = "https://raw.githubusercontent.com/zcreativelabs/react-simple-maps/master/topojson-maps/world-110m.json"
 
@@ -64,7 +65,7 @@ const MapChart = ({dataUtils}) => {
                             ))}
                         </Select>
                     </div>
-                    <span className={"title"}>Liczba samobójstw w krajach</span>
+                    <span className={"title"}>Number of suicides in countries</span>
                 </div>
                 <ComposableMap height={400} data-tip="" projectionConfig={{scale: 140}}>
                     <Sphere stroke="#E4E5E6" strokeWidth={0.5}/>
@@ -88,6 +89,9 @@ const MapChart = ({dataUtils}) => {
                                         }}
                                         onMouseLeave={() => {
                                             setTooltipContent("");
+                                        }}
+                                        onClick={() => {
+                                            dispatch(chernoffFacesActions.showChernoffFaces(geo.properties.NAME_LONG, yearInput))
                                         }}
                                         style={{
                                             default: {

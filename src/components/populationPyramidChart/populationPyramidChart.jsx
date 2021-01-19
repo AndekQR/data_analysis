@@ -26,7 +26,6 @@ const PopulationPyramidChart = ({dataUtils}) => {
     useEffect(() => {
         dispatch(progressBarActions.showProgressBar())
         const ranges = dataUtils.getAllAgeRangesAsString()
-        console.log(ranges)
         setCategories(ranges)
         dataUtils.getDistinctsAllCountires().then(countries => {
             setAllCountries(countries)
@@ -39,7 +38,6 @@ const PopulationPyramidChart = ({dataUtils}) => {
             })
         })
     }, [])
-
 
 
     useEffect(() => {
@@ -86,7 +84,7 @@ const PopulationPyramidChart = ({dataUtils}) => {
             },
             labels: {
                 formatter: function () {
-                    return Math.abs(this.value) ;
+                    return Math.abs(this.value);
                 }
             }
         },

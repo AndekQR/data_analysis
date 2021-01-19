@@ -27,6 +27,11 @@ class DataUtils {
         }
     }
 
+    /**
+     * zwraca lata bez powtórzeń które są przyporządkowane do danego kraju
+     * @param country
+     * @returns {Promise<string[]>}
+     */
     async getDistinctAllYearsByCountry(country) {
         if (this.#years == null) await this.getYears()
         return this.data.filter(element => (
@@ -41,7 +46,7 @@ class DataUtils {
 
     /**
      * zwraca wszystkie unikalne lata
-     * @returns {Promise<null>}
+     * @returns {Promise<string[]>}
      */
     async getYears() {
         if (this.#years == null) {
@@ -137,9 +142,7 @@ class DataUtils {
         }).flat()
 
         let max = Math.max.apply(Math, mappedObjects.map(object => {
-            let tmp = this.getAllDeaths(object.country, object.year)
-            // console.log(`${object.country} ${object.year} = ${tmp}`)
-            return tmp
+            return this.getAllDeaths(object.country, object.year)
         }))
 
         let min = Math.min.apply(Math, mappedObjects.map(object => {
@@ -160,6 +163,118 @@ class DataUtils {
     }
 
     /**
+     * zwraca uśrednione dane dla wybranego kraju i roku z pozdiałem
+     * na mężczyzny i kobiety
+     * @param country {string}
+     * @param year {string}
+     * @returns {Promise<{}>}
+     */
+    async getAverageMaleFemaleData(country, year) {
+        let data = await this.getFilteredData(country, year);
+        let maleRecordNumber = 0;
+        let femaleRecordNumber = 0;
+        let result = {
+            male: {
+                sex: "male",
+                suicides_no: 0.0,
+                population: 0.0,
+                suicides_k_pop: 0.0,
+                age: 0.0
+            },
+            female: {
+                sex: "female",
+                suicides_no: 0.0,
+                population: 0.0,
+                suicides_k_pop: 0.0,
+                age: 0.0
+            }
+        }
+        if (data.length > 0) {
+            for (let i = 0; i < data.length - 1; i++) {
+                let record = data[i]
+                let parsedAge = this.parseAge(record.age)
+                if (record.sex === "male") {
+                    maleRecordNumber++
+                    result.male.age += (parsedAge.length === 2 ? ((Number(parsedAge[1]) + Number(parsedAge[0])) / 2) : Number(parsedAge[0]))
+                    result.male.suicides_k_pop += Number(record.suicides_k_pop)
+                    result.male.population += Number(record.population)
+                    result.male.suicides_no += Number(record.suicides_no)
+                } else if (record.sex === "female") {
+                    femaleRecordNumber++
+                    result.female.age += (parsedAge.length === 2 ? ((Number(parsedAge[1]) + Number(parsedAge[0])) / 2) : Number(parsedAge[0]))
+                    result.female.suicides_k_pop += Number(record.suicides_k_pop)
+                    result.female.population += Number(record.population)
+                    result.female.suicides_no += Number(record.suicides_no)
+                }
+            }
+
+            result.male.age = result.male.age / maleRecordNumber
+            result.male.suicides_k_pop = result.male.suicides_k_pop / maleRecordNumber
+            result.male.population = result.male.population / maleRecordNumber
+            result.male.suicides_no = result.male.suicides_no / maleRecordNumber
+
+            result.female.age = result.female.age / femaleRecordNumber
+            result.female.suicides_k_pop = result.female.suicides_k_pop / femaleRecordNumber
+            result.female.population = result.female.population / femaleRecordNumber
+            result.female.suicides_no = result.female.suicides_no / femaleRecordNumber
+
+            return result
+        }
+        return null;
+    }
+
+    /**
+     * zwraca średnie światowe wszystkich współczynników dla mężczyzn i kobiet
+     * @param year
+     * @returns {Promise<{female: {suicides_no: number, sex: string, age: number, population: number, suicides_k_pop: number}, male: {suicides_no: number, sex: string, age: number, population: number, suicides_k_pop: number}}>}
+     */
+    async getAverageMaleFemaleDataForAllCountries(year) {
+        let countries = await this.getDistinctsAllCountires();
+        let result = {
+            male: {
+                sex: "male",
+                suicides_no: 0,
+                population: 0,
+                suicides_k_pop: 0,
+                age: 0
+            },
+            female: {
+                sex: "female",
+                suicides_no: 0,
+                population: 0,
+                suicides_k_pop: 0,
+                age: 0
+            }
+        }
+        for (const country of countries) {
+            let countryData = await this.getAverageMaleFemaleData(country, year);
+            if (countryData != null) {
+                result.male.age += countryData.male.age
+                result.male.suicides_k_pop += countryData.male.suicides_k_pop
+                result.male.population += countryData.male.population
+                result.male.suicides_no += countryData.male.suicides_no
+
+                result.female.age += countryData.female.age
+                result.female.suicides_k_pop += countryData.female.suicides_k_pop
+                result.female.population += countryData.female.population
+                result.female.suicides_no += countryData.female.suicides_no
+            }
+        }
+
+        result.male.age = result.male.age / countries.length
+        result.male.suicides_k_pop = result.male.suicides_k_pop / countries.length
+        result.male.population = result.male.population / countries.length
+        result.male.suicides_no = result.male.suicides_no / countries.length
+
+        result.female.age = result.female.age / countries.length
+        result.female.suicides_k_pop = result.female.suicides_k_pop / countries.length
+        result.female.population = result.female.population / countries.length
+        result.female.suicides_no = result.female.suicides_no / countries.length
+
+        return result;
+    }
+
+    /**
      * parsuje wiek podany w danych na tablicę typu [starAge, endAge]
      * gdzie drugiej komórki może nie być
      * lub zwraca null gdy nieprawidłowe ageString
@@ -177,17 +292,17 @@ class DataUtils {
      * @returns {string[]}
      */
     getAllAgeRangesAsString() {
-        let tmpData =  this.data.filter((element, index, array) => {
+        let tmpData = this.data.filter((element, index, array) => {
             let firstIndex = array.findIndex(t => (t.age === element.age))
             return firstIndex === index
         }).map((element) => element.age)
-        tmpData.sort((a,b) => {
+        tmpData.sort((a, b) => {
             const firstNumberRegex = /\d+/g
             let firstNumberFromA = Number([...a.matchAll(firstNumberRegex)][0][0])
             let firstNumberFromB = Number([...b.matchAll(firstNumberRegex)][0][0])
 
             if (firstNumberFromA > firstNumberFromB) return 1
-            else if(firstNumberFromA < firstNumberFromB) return -1
+            else if (firstNumberFromA < firstNumberFromB) return -1
             else return 0
         })
         return tmpData

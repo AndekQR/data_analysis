@@ -3,8 +3,7 @@ import React, {useEffect, useState} from "react";
 import InputLabel from "@material-ui/core/InputLabel";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
-import {Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, XAxis, YAxis} from "recharts";
-import {Tooltip} from "@material-ui/core";
+import {Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis} from "recharts";
 import {progressBarActions} from "../../redux/actions/progressBar.actions";
 import {useDispatch} from "react-redux";
 
@@ -112,17 +111,18 @@ const MyBarChart = ({dataUtils}) => {
                                 ))}
                             </Select>
                         </div>
-                        <span className={"title"}>Liczba określonego wskaźnika w każdym roku</span>
+                        <span className={"title"}>Values of specified indicator in each year</span>
                     </div>
                 </div>
                 <div className={"chart"}>
                     <ResponsiveContainer width={"95%"} height={500}>
-                        <BarChart data={data}>
+                        <BarChart data={data}
+                                  margin={{
+                                      top: 20, right: 20, bottom: 20, left: 20,
+                                  }}>
                             <CartesianGrid strokeDasharray="3 3"/>
-                            <XAxis dataKey="name"/>
-                            <YAxis/>
-                            <Tooltip/>
-                            <Legend/>
+                            <XAxis dataKey="name" label={{value: "Year", angle: 0, position: 'bottom'}}/>
+                            <YAxis label={{value: "Value", angle: -90, position: 'left'}}/>
                             <Bar dataKey="value" fill="#8884d8"/>
                         </BarChart>
                     </ResponsiveContainer>
